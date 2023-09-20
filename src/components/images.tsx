@@ -183,12 +183,19 @@ function Images({ isLoggedIn }: Images) {
 
   return (
     <div className="mt-10">
-      <div className="flex items-center justify-between">
-        <h3 className="text-green-800 font-bold text-lg">Photos</h3>
-        <div className="w-60 h-10 rounded-lg border border-gray-400 flex justify-between items-center px-2">
+      <div className="flex flex-col md:flex-row gap-y-2 md:items-center md:justify-between">
+        <div className="flex flex-row md:flex-col justify-between items-center md:items-start">
+          <h3 className="text-green-800 font-bold text-lg">Photos</h3>
+          {!isLoggedIn && (
+            <p className="text-xs md:text-sm text-gray-500">
+              Kindly login to use drag and drop
+            </p>
+          )}
+        </div>
+        <div className="w-full md:w-60 h-10 rounded-lg border border-gray-400 flex justify-between items-center px-2">
           <input
             type="text"
-            className="outline-none w-48 bg-transparent placeholder:text-xs text-xs"
+            className="outline-none w-[90%] md:w-48 bg-transparent placeholder:text-xs text-xs"
             placeholder="Search by image tag"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
