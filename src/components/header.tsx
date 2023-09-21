@@ -12,7 +12,7 @@ function Header({ isLoggedIn, setIsLoggedIn }: Header) {
   return (
     <>
       {login && (
-        <Login open={login} setOpen={setLogin} setIsLoggedIn={setIsLoggedIn} />
+        <Login open={login} setOpen={setLogin} setIsLoggedIn={setIsLoggedIn} isLoggedIN={isLoggedIn} />
       )}
       <div className="h-14 w-full flex justify-between items-center">
         <div className="flex items-center gap-2">

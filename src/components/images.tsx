@@ -250,9 +250,9 @@ function Images({ isLoggedIn }: Images) {
             </Droppable>
           </DragDropContext>
         ) : (
-          <div className="grid md:grid-cols-4 gap-3 w-full mt-6">
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3 w-full mt-6">
             {filteredImages?.map((item) => (
-              <div key={item.id} className={`relative h-[289px]`}>
+              <div key={item.id} className={`relative h-[150px] md:h-[289px]`}>
                 {isLoading[item.id] ? (
                   <Skeleton className="w-full h-full" />
                 ) : null}

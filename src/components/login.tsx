@@ -21,13 +21,14 @@ const auth = getAuth(app);
 interface Login {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isLoggedIN: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function Login({ open, setOpen, setIsLoggedIn }: Login) {
+function Login({ open, setOpen, setIsLoggedIn, isLoggedIN }: Login) {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("user@example.com");
+  const [password, setPassword] = useState("1Password");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,10 +38,10 @@ function Login({ open, setOpen, setIsLoggedIn }: Login) {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      console.log(true);
+      // console.log(true);
       setLoading(false);
-        setError("");
-        setIsLoggedIn(true);
+      setError("");
+      setIsLoggedIn(true);
       setSuccess(true);
     } catch (error: any) {
       setLoading(false);
