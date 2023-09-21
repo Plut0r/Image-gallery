@@ -21,11 +21,10 @@ const auth = getAuth(app);
 interface Login {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  isLoggedIN: boolean;
   setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function Login({ open, setOpen, setIsLoggedIn, isLoggedIN }: Login) {
+function Login({ open, setOpen, setIsLoggedIn }: Login) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("user@example.com");
   const [password, setPassword] = useState("1Password");
