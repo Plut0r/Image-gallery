@@ -4,6 +4,7 @@ import Images from "./components/images";
 
 function App() {
   const [isLoggedIn, setisLoggedIn] = useState(false);
+  console.log(isLoggedIn);
 
   useEffect(() => {
     const storedLogDetails = localStorage.getItem("loggedIn");
@@ -13,9 +14,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      localStorage.setItem("loggedIn", JSON.stringify(isLoggedIn));
-    }
+    localStorage.setItem("loggedIn", JSON.stringify(isLoggedIn));
   }, [isLoggedIn]);
 
   return (

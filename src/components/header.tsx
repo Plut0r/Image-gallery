@@ -24,10 +24,10 @@ function Header({ isLoggedIn, setIsLoggedIn }: Header) {
           className={`${
             isLoggedIn ? "bg-gray-500" : "bg-green-800"
           } px-5 py-2 text-white rounded-lg`}
-          disabled={isLoggedIn}
-          onClick={() => setLogin(true)}
+          // disabled={isLoggedIn}
+          onClick={() => isLoggedIn ? setIsLoggedIn(false) : setLogin(true)}
         >
-          {isLoggedIn ? "Logged In" : "Login"}
+          {isLoggedIn ? "Log Out" : "Login"}
         </button>
       </div>
     </>

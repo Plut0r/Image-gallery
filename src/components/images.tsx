@@ -1,8 +1,28 @@
 import { useState } from "react";
 import { BsSearch } from "react-icons/bs";
-import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+  UniqueIdentifier,
+  DragOverlay,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  rectSortingStrategy,
+  useSortable,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import Item from "./Item";
+import Skeleton from "react-loading-skeleton";
 
 const images: {
   id: number;
@@ -153,10 +173,64 @@ interface Images {
   isLoggedIn: boolean;
 }
 
+interface SortableIMAGE {
+  item: {
+    id: number;
+    tag: string;
+    path: string;
+    gridPlacement: {
+      colStart: number;
+      colEnd: number;
+      rowStart: number;
+      rowEnd: number;
+    };
+  };
+  isLoading: boolean[];
+  handleImageLoad: Function;
+  setId: React.Dispatch<React.SetStateAction<number>>;
+}
+
+function SortableImage(props: SortableIMAGE) {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: props.item.id });
+
+  const style = {
+    transition,
+    transform: CSS.Transform.toString(transform),
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onDragStart={() => props.setId(props.item.id)}
+    >
+      <Item
+        ref={setNodeRef}
+        style={style}
+        {...props}
+        {...attributes}
+        {...listeners}
+      />
+    </div>
+  );
+}
+
 function Images({ isLoggedIn }: Images) {
   const [galleryImages, setGalleryImages] = useState(images);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState<any[]>(Array(12).fill(true));
+  const [activeId, setActiveId] = useState<UniqueIdentifier>();
+  const [imageId, setImageId] = useState(0);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const filteredImages = galleryImages.filter((image) =>
     image.tag.toLowerCase().includes(search.toLowerCase())
@@ -170,16 +244,35 @@ function Images({ isLoggedIn }: Images) {
     });
   };
 
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return; // Return if dropped outside the droppable area
+  // const handleDragEnd = (result: any) => {
+  //   if (!result.destination) return; // Return if dropped outside the droppable area
 
-    const { source, destination } = result;
-    const updatedImages = Array.from(galleryImages);
-    const [draggedImage] = updatedImages.splice(source.index, 1);
-    updatedImages.splice(destination.index, 0, draggedImage);
+  //   const { source, destination } = result;
+  //   const updatedImages = Array.from(galleryImages);
+  //   const [draggedImage] = updatedImages.splice(source.index, 1);
+  //   updatedImages.splice(destination.index, 0, draggedImage);
 
-    setGalleryImages(updatedImages);
-  };
+  //   setGalleryImages(updatedImages);
+  // };
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id);
+  }
+
+  // console.log(activeId);
+
+  function onDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveId(active.id);
+    if (active.id === over!.id) {
+      return;
+    }
+    setGalleryImages((images) => {
+      const oldIndex = images.findIndex((image) => image.id === active.id);
+      const newIndex = images.findIndex((image) => image.id === over?.id);
+      return arrayMove(images, oldIndex, newIndex);
+    });
+  }
 
   return (
     <div className="mt-10">
@@ -203,52 +296,49 @@ function Images({ isLoggedIn }: Images) {
           <BsSearch color="gray" />
         </div>
       </div>
+
       <div className="w-full">
         {isLoggedIn ? (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="image-gallery">
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="grid md:grid-cols-4 gap-3 w-full mt-6 overflow-hidden"
-                >
-                  {filteredImages?.map((item, index) => (
-                    <Draggable
-                      key={item.id}
-                      draggableId={item.id.toString()}
-                      index={index}
-                    >
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={`relative h-[289px] col-span-1 grid-flow-col-dense z-10`}
-                        >
-                          {isLoading[item.id] ? (
-                            <Skeleton className="w-full h-full" />
-                          ) : null}
-                          <img
-                            src={item.path}
-                            alt=""
-                            className={`h-full w-full object-cover absolute top-0 left-0 bottom-0 right-0 ${
-                              isLoading[item.id] ? "hidden" : ""
-                            }`}
-                            onLoad={() => handleImageLoad(item.id)}
-                          />
-                          <div className="absolute bottom-2 left-2 bg-[#b3b3b3] text-white p-1 rounded-lg text-xs">
-                            {item.tag}
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={onDragEnd}
+            onDragStart={handleDragStart}
+          >
+            <SortableContext
+              items={galleryImages}
+              strategy={rectSortingStrategy}
+            >
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full mt-6">
+                {filteredImages?.map((item) => (
+                  <SortableImage
+                    key={item.id}
+                    item={item}
+                    isLoading={isLoading}
+                    handleImageLoad={handleImageLoad}
+                    setId={setImageId}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+            {/* <DragOverlay
+            key={activeId}
+            adjustScale
+            style={{ transformOrigin: "0 0 " }}
+          > 
+            {filteredImages.map((item) => (
+              <>
+                {activeId ? (
+                  <Item
+                    item={item}
+                    isLoading={isLoading}
+                    handleImageLoad={handleImageLoad}
+                  />
+                ) : null}
+              </>
+            ))}
+          </DragOverlay> */}
+          </DndContext>
         ) : (
           <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-3 w-full mt-6">
             {filteredImages?.map((item) => (
@@ -285,28 +375,6 @@ function Images({ isLoggedIn }: Images) {
           </div>
         </SortableContext>
       </DndContext> */}
-
-      {/* <div className="grid grid-cols-4 gap-3 w-full mt-6">
-        {filteredImages?.map((item) => (
-          <div
-            key={item.id}
-            className={`relative h-[289px]`}
-          >
-            {isLoading[item.id] ? <Skeleton className="w-full h-full" /> : null}
-            <img
-              src={item.path}
-              alt=""
-              className={`h-full w-full object-cover absolute top-0 left-0 bottom-0 right-0 ${
-                isLoading[item.id] ? "hidden" : ""
-              }`}
-              onLoad={() => handleImageLoad(item.id)}
-            />
-            <div className="absolute bottom-2 left-2 bg-[#b3b3b3] text-white p-1 rounded-lg text-xs">
-              {item.tag}
-            </div>
-          </div>
-        ))}
-      </div> */}
     </div>
   );
 }
