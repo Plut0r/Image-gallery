@@ -1,4 +1,4 @@
-import { forwardRef, HTMLAttributes, CSSProperties } from "react";
+import { forwardRef, HTMLAttributes } from "react";
 import Skeleton from "react-loading-skeleton";
 
 export type ItemProps = HTMLAttributes<HTMLDivElement> & {

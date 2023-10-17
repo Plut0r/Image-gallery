@@ -11,7 +11,6 @@ import {
   DragStartEvent,
   DragEndEvent,
   UniqueIdentifier,
-  DragOverlay,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -222,7 +221,9 @@ function Images({ isLoggedIn }: Images) {
   const [galleryImages, setGalleryImages] = useState(images);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState<any[]>(Array(12).fill(true));
+  // @ts-ignore
   const [activeId, setActiveId] = useState<UniqueIdentifier>();
+  // @ts-ignore
   const [imageId, setImageId] = useState(0);
 
   const sensors = useSensors(
